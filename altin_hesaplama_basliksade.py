@@ -14,17 +14,17 @@ st.title("Altın Hesaplama")
 # Firma adı
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
 
-# USD/KG işlemi
+# USD/KG işlemi (manuel giriş)
 usd_kg_otomatik = 104680
 usd_kg_satis = st.number_input("USD/KG Satış Fiyatı", value=usd_kg_otomatik)
 gram_altin = usd_kg_satis / 1000
 st.write(f"Gram Altın Fiyatı (USD): **{gram_altin:.3f}**")
 
-# Gram
+# Altın gramı
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
-# İşçilik tipi listesi
-tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA"])
+# İşçilik tipi listesi (18 OMEGA eklendi)
+tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA", "18 OMEGA"])
 
 # Milyem ayar seçenekleri
 ayar_secenekleri = {
@@ -37,15 +37,21 @@ ayar_secenekleri = {
     "10K": 0.417
 }
 
-# Milyem ve işçilik değeri
+# Milyem ve işçilik değeri belirleme
 if tip == "14 OMEGA":
     saflik = 0.380
     iscilik = 0.000
     secilen_ayar = "14 OMEGA"
     st.write("14 OMEGA seçildiği için Saflık: 0.380 | İşçilik: 0.000")
+elif tip == "18 OMEGA":
+    saflik = 0.450
+    iscilik = 0.000
+    secilen_ayar = "18 OMEGA"
+    st.write("18 OMEGA seçildiği için Saflık: 0.450 | İşçilik: 0.000")
 else:
     secilen_ayar = st.selectbox("Milyem (Saflık) Ayarı", list(ayar_secenekleri.keys()))
     saflik = ayar_secenekleri[secilen_ayar]
+    
     if tip == "CHP":
         default_iscilik = 0.020
     elif tip == "Halat":
@@ -56,6 +62,7 @@ else:
         default_iscilik = 0.015
     else:
         default_iscilik = 0.035
+        
     iscilik = st.number_input("İşçilik", value=default_iscilik, step=0.001, format="%.3f")
 
 # Hesaplamalar
@@ -75,7 +82,7 @@ if "veriler" not in st.session_state:
 if st.button("Hesaplamayı Kaydet"):
     st.session_state.veriler.append({
         "Gram": round(altin_gram, 2),
-        "Ürün": tip + f" ({secilen_ayar})" if tip != "14 OMEGA" else tip,
+        "Ürün": tip + f" ({secilen_ayar})" if tip not in ["14 OMEGA", "18 OMEGA"] else tip,
         "Milyem": round(saflik, 3),
         "İşçilik": round(iscilik, 3),
         "1g İşçilik": round(sadece_iscilik, 2),
