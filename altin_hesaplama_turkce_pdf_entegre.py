@@ -9,7 +9,7 @@ st.set_page_config(page_title="Altın Hesaplama", layout="centered")
 # Logo
 logo = Image.open("Siyah-PNG.png")
 st.image(logo, use_container_width=True)
-st.title("Altın Hesaplama ve PDF Raporlama")
+st.title("Altın Hesaplama")
 
 # Firma adı
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
