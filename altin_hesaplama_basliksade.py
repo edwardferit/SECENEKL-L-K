@@ -3,10 +3,25 @@ import streamlit as st
 from fpdf import FPDF
 from PIL import Image
 import requests
+from datetime import datetime
 
+# Sayfayı her 30 saniyede bir yenile
+st.markdown(
+    """
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, 30000);
+    </script>
+    """,
+    unsafe_allow_html=True
+)
+
+# Sayfa başlığı ve zaman bilgisi
 st.set_page_config(page_title="Altın Hesaplama", layout="centered")
+st.caption(f"Güncelleme Zamanı: {datetime.now().strftime('%H:%M:%S')}")
 
-# Logo yükle
+# Logo
 try:
     logo = Image.open("Siyah-PNG.png")
     st.image(logo, use_container_width=True)
@@ -24,7 +39,7 @@ def get_usd_kg_from_api():
     try:
         url = "https://api.exchangerate.host/convert?from=XAU&to=USD"
         response = requests.get(url).json()
-        usd_per_ounce = response['result']
+        usd_per_ounce = response["result"]
         usd_per_kg = usd_per_ounce * 32.1507
         return round(usd_per_kg, 2)
     except:
@@ -90,7 +105,7 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
-# Verileri geçici olarak tut
+# Geçici veri listesi
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
@@ -104,7 +119,7 @@ if st.button("Hesaplamayı Kaydet"):
         "Toplam": round(toplam_fiyat, 2)
     })
 
-# PDF oluştur
+# PDF çıktısı
 if st.session_state.veriler:
     st.subheader("Kayıtlı Hesaplamalar")
     st.table(st.session_state.veriler)
