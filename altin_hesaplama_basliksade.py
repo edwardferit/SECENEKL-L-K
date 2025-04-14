@@ -5,7 +5,6 @@ from PIL import Image
 import requests
 from datetime import datetime
 
-# Sayfa ayarları (ilk Streamlit komutu)
 st.set_page_config(page_title="Fiyat Teklif", layout="centered")
 
 # Logo (isteğe bağlı)
@@ -15,14 +14,13 @@ try:
 except:
     st.warning("Logo yüklenemedi. 'Siyah-PNG.png' dosyasını kontrol edin.")
 
-# Başlık
 st.title("FİYAT TEKLİF")
 
 # Firma adı
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
 
-# USD/KG API verisi
-@st.cache_data
+# USD/KG verisini 5 dakikada bir çeken fonksiyon
+@st.cache_data(ttl=300)  # 5 dakikada bir yenilenir
 def get_usd_kg_from_api():
     try:
         url = "https://api.exchangerate.host/convert?from=XAU&to=USD"
@@ -33,9 +31,9 @@ def get_usd_kg_from_api():
     except:
         return None
 
+# Otomatik veya yedek fiyatı göster
 usd_kg_otomatik = get_usd_kg_from_api() or 104.680
 
-# USD/KG giriş (ondalık destekli)
 usd_kg_satis = st.number_input(
     "USD/KG Satış Fiyatı",
     value=float(usd_kg_otomatik),
@@ -43,24 +41,18 @@ usd_kg_satis = st.number_input(
     format="%.3f"
 )
 
-st.caption("Fiyat exchangerate.host API üzerinden alınmıştır. Harem Altın için: [USD/KG fiyatı](https://m.doviz.com/altin/harem/usd-kg)")
+st.caption("Fiyat exchangerate.host API üzerinden otomatik alınır ve her 5 dakikada bir güncellenir. Harem Altın için: [USD/KG fiyatı](https://m.doviz.com/altin/harem/usd-kg)")
 
-# Gram fiyat hesapla
 gram_altin = usd_kg_satis
-
-# Altın gramı
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
-# İşçilik tipi
 tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA", "18 OMEGA"])
 
-# Milyem değerleri
 ayar_secenekleri = {
     "14K": 0.585, "18K": 0.750, "21K": 0.875,
     "22K": 0.916, "8K": 0.333, "9K": 0.375, "10K": 0.417
 }
 
-# Saflık ve işçilik ayarı
 if tip == "14 OMEGA":
     saflik = st.number_input("Milyem (Saflık)", value=0.380, step=0.001, format="%.3f")
     iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
@@ -86,7 +78,6 @@ else:
 
     iscilik = st.number_input("İşçilik", value=default_iscilik, step=0.001, format="%.3f")
 
-# Hesaplamalar
 sadece_iscilik = iscilik * gram_altin
 iscilik_dahil_fiyat = (saflik + iscilik) * gram_altin
 toplam_fiyat = iscilik_dahil_fiyat * altin_gram
@@ -96,7 +87,6 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
-# Kayıtlar
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
@@ -110,7 +100,6 @@ if st.button("Hesaplamayı Kaydet"):
         "Toplam": round(toplam_fiyat, 2)
     })
 
-# PDF çıktısı
 if st.session_state.veriler:
     st.subheader("Kayıtlı Hesaplamalar")
     st.table(st.session_state.veriler)
