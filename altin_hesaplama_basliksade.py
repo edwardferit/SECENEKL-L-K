@@ -6,19 +6,7 @@ import requests
 from datetime import datetime
 
 # Sayfa yapılandırması – Bu ilk Streamlit komutu olmalı!
-st.set_page_config(page_title="Altın Hesaplama", layout="centered")
-
-# 30 saniyede bir sayfa yenileme (otomatik güncelleme)
-st.markdown("""
-    <script>
-        setTimeout(function() {
-            window.location.reload();
-        }, 30000);
-    </script>
-""", unsafe_allow_html=True)
-
-# Sayfa güncelleme zamanı gösterimi
-st.caption(f"Güncelleme Zamanı: {datetime.now().strftime('%H:%M:%S')}")
+st.set_page_config(page_title="FİYAT TEKLİF", layout="centered")
 
 # Logo (opsiyonel)
 try:
@@ -27,7 +15,7 @@ try:
 except:
     st.warning("Logo yüklenemedi. 'Siyah-PNG.png' dosyası eksik olabilir.")
 
-st.title("Altın Hesaplama")
+st.title("FİYAT TEKLİF")
 
 # Firma adı girişi
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
@@ -50,7 +38,6 @@ usd_kg_satis = st.number_input("USD/KG Satış Fiyatı", value=usd_kg_otomatik)
 st.caption("Fiyat exchangerate.host API üzerinden alınmıştır. Harem Altın için: [USD/KG fiyatı](https://m.doviz.com/altin/harem/usd-kg)")
 
 gram_altin = usd_kg_satis / 1000
-st.write(f"Gram Altın Fiyatı (USD): **{gram_altin:.3f}**")
 
 # Altın gramı girişi
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
