@@ -6,12 +6,12 @@ import requests
 
 st.set_page_config(page_title="Fiyat Teklif", layout="centered")
 
-# Logo (isteğe bağlı, varsa dosyan içinde olmalı)
+# Logo
 try:
     logo = Image.open("Siyah-PNG.png")
     st.image(logo, use_container_width=True)
 except:
-    pass  # logo yoksa hata vermesin
+    st.warning("Logo yüklenemedi. 'Siyah-PNG.png' dosyasını kontrol edin.")
 
 st.title("FİYAT TEKLİF")
 
@@ -28,7 +28,7 @@ def get_usd_kg_from_api():
     except:
         return None
 
-# Fiyat çekimi (birebir)
+# Fark yok, birebir fiyat
 usd_kg_mid = get_usd_kg_from_api() or 104.680
 usd_kg_satis_otomatik = usd_kg_mid
 
@@ -45,20 +45,13 @@ if st.button("USD/KG Güncelle"):
 
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
-tip = st.selectbox(
-    "İşçilik Tipi",
-    ["CHP", "Halat", "Gurmet", "Forse", "İçiboş Forse",
-     "14 OMEGA", "18 OMEGA", "21 OMEGA",
-     "14 FERMUAR", "18 FERMUAR", "21 FERMUAR",
-     "Ataç", "Doc", "Flexi"]
-)
+tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA", "18 OMEGA"])
 
 ayar_secenekleri = {
     "14K": 0.585, "18K": 0.750, "21K": 0.875,
     "22K": 0.916, "8K": 0.333, "9K": 0.375, "10K": 0.417
 }
 
-# Omega ve Fermuar özel durumları
 if tip == "14 OMEGA":
     saflik = st.number_input("Milyem (Saflık)", value=0.380, step=0.001, format="%.3f")
     iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
@@ -67,22 +60,6 @@ elif tip == "18 OMEGA":
     saflik = st.number_input("Milyem (Saflık)", value=0.450, step=0.001, format="%.3f")
     iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
     secilen_ayar = "18 OMEGA"
-elif tip == "21 OMEGA":
-    saflik = st.number_input("Milyem (Saflık)", value=0.550, step=0.001, format="%.3f")
-    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
-    secilen_ayar = "21 OMEGA"
-elif tip == "14 FERMUAR":
-    saflik = st.number_input("Milyem (Saflık)", value=0.575, step=0.001, format="%.3f")
-    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
-    secilen_ayar = "14 FERMUAR"
-elif tip == "18 FERMUAR":
-    saflik = st.number_input("Milyem (Saflık)", value=0.740, step=0.001, format="%.3f")
-    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
-    secilen_ayar = "18 FERMUAR"
-elif tip == "21 FERMUAR":
-    saflik = st.number_input("Milyem (Saflık)", value=0.865, step=0.001, format="%.3f")
-    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
-    secilen_ayar = "21 FERMUAR"
 else:
     secilen_ayar = st.selectbox("Milyem (Saflık) Ayarı", list(ayar_secenekleri.keys()))
     saflik = ayar_secenekleri[secilen_ayar]
@@ -95,14 +72,6 @@ else:
         default_iscilik = 0.035
     elif tip == "Forse":
         default_iscilik = 0.015
-    elif tip == "İçiboş Forse":
-        default_iscilik = 0.035
-    elif tip == "Ataç":
-        default_iscilik = 0.035
-    elif tip == "Doc":
-        default_iscilik = 0.035
-    elif tip == "Flexi":
-        default_iscilik = 0.035
     else:
         default_iscilik = 0.035
 
@@ -118,7 +87,6 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
-# Geçici veri kaydı
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
