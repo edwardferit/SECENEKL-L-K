@@ -33,7 +33,7 @@ def get_usd_kg_from_api():
     except:
         return None
 
-usd_kg_otomatik = get_usd_kg_from_api() or 104680
+usd_kg_otomatik = get_usd_kg_from_api() or 104.680
 
 # USD/KG giriş (ondalık destekli)
 usd_kg_satis = st.number_input(
@@ -46,7 +46,7 @@ usd_kg_satis = st.number_input(
 st.caption("Fiyat exchangerate.host API üzerinden alınmıştır. Harem Altın için: [USD/KG fiyatı](https://m.doviz.com/altin/harem/usd-kg)")
 
 # Gram fiyat hesapla
-gram_altin = usd_kg_satis / 1000
+gram_altin = usd_kg_satis
 
 # Altın gramı
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
