@@ -45,7 +45,13 @@ if st.button("USD/KG Güncelle"):
 
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
-tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA", "18 OMEGA"])
+tip = st.selectbox(
+    "İşçilik Tipi",
+    ["CHP", "Halat", "Gurmet", "Forse",
+     "14 OMEGA", "18 OMEGA", "21 OMEGA",
+     "14 FERMUAR", "18 FERMUAR", "21 FERMUAR",
+     "Ataç", "Doc", "Flexi"]
+)
 
 ayar_secenekleri = {
     "14K": 0.585, "18K": 0.750, "21K": 0.875,
