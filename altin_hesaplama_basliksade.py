@@ -2,7 +2,8 @@
 import streamlit as st
 from fpdf import FPDF
 from PIL import Image
-import os
+import requests
+from bs4 import BeautifulSoup
 
 st.set_page_config(page_title="Altın Hesaplama", layout="centered")
 
@@ -14,8 +15,26 @@ st.title("Altın Hesaplama")
 # Firma adı
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
 
-# USD/KG işlemi (manuel giriş)
-usd_kg_otomatik = 104680
+# Otomatik USD/KG altın fiyatı çekme fonksiyonu
+@st.cache_data
+def get_usd_kg_from_dovizcom():
+    try:
+        url = "https://altin.doviz.com"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+        gram_span = soup.find("span", {"data-socket-key": "USD_Altin"})
+        if gram_span:
+            gram_price = float(gram_span.text.replace(",", "."))
+            return gram_price * 1000  # USD/kg
+        else:
+            return None
+    except Exception as e:
+        st.warning(f"Döviz.com verisi alınamadı: {e}")
+        return None
+
+# USD/KG fiyatı çekiliyor
+usd_kg_otomatik = get_usd_kg_from_dovizcom() or 104680
 usd_kg_satis = st.number_input("USD/KG Satış Fiyatı", value=usd_kg_otomatik)
 gram_altin = usd_kg_satis / 1000
 st.write(f"Gram Altın Fiyatı (USD): **{gram_altin:.3f}**")
@@ -39,19 +58,25 @@ ayar_secenekleri = {
 
 # Milyem ve işçilik değeri belirleme
 if tip == "14 OMEGA":
-    saflik = 0.380
-    iscilik = 0.000
+    default_saflik = 0.380
+    default_iscilik = 0.000
+    st.write("14 OMEGA seçildiği için varsayılan değerler atanmıştır.")
+    saflik = st.number_input("Milyem (Saflık)", value=default_saflik, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=default_iscilik, step=0.001, format="%.3f")
     secilen_ayar = "14 OMEGA"
-    st.write("14 OMEGA seçildiği için Saflık: 0.380 | İşçilik: 0.000")
+
 elif tip == "18 OMEGA":
-    saflik = 0.450
-    iscilik = 0.000
+    default_saflik = 0.450
+    default_iscilik = 0.000
+    st.write("18 OMEGA seçildiği için varsayılan değerler atanmıştır.")
+    saflik = st.number_input("Milyem (Saflık)", value=default_saflik, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=default_iscilik, step=0.001, format="%.3f")
     secilen_ayar = "18 OMEGA"
-    st.write("18 OMEGA seçildiği için Saflık: 0.450 | İşçilik: 0.000")
+
 else:
     secilen_ayar = st.selectbox("Milyem (Saflık) Ayarı", list(ayar_secenekleri.keys()))
     saflik = ayar_secenekleri[secilen_ayar]
-    
+
     if tip == "CHP":
         default_iscilik = 0.020
     elif tip == "Halat":
@@ -62,7 +87,7 @@ else:
         default_iscilik = 0.015
     else:
         default_iscilik = 0.035
-        
+
     iscilik = st.number_input("İşçilik", value=default_iscilik, step=0.001, format="%.3f")
 
 # Hesaplamalar
