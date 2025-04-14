@@ -3,46 +3,44 @@ import streamlit as st
 from fpdf import FPDF
 from PIL import Image
 import requests
-from bs4 import BeautifulSoup
 
 st.set_page_config(page_title="Altın Hesaplama", layout="centered")
 
 # Logo
-logo = Image.open("Siyah-PNG.png")
-st.image(logo, use_container_width=True)
+try:
+    logo = Image.open("Siyah-PNG.png")
+    st.image(logo, use_container_width=True)
+except:
+    st.warning("Logo yüklenemedi. 'Siyah-PNG.png' dosyası bulunamadı.")
+
 st.title("Altın Hesaplama")
 
 # Firma adı
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
 
-# Otomatik USD/KG altın fiyatı çekme fonksiyonu
+# USD/KG otomatik veri çekme (exchangerate.host üzerinden)
 @st.cache_data
-def get_usd_kg_from_dovizcom():
+def get_usd_kg_from_api():
     try:
-        url = "https://altin.doviz.com"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-        gram_span = soup.find("span", {"data-socket-key": "USD_Altin"})
-        if gram_span:
-            gram_price = float(gram_span.text.replace(",", "."))
-            return gram_price * 1000  # USD/kg
-        else:
-            return None
-    except Exception as e:
-        st.warning(f"Döviz.com verisi alınamadı: {e}")
+        url = "https://api.exchangerate.host/convert?from=XAU&to=USD"
+        response = requests.get(url).json()
+        usd_per_ounce = response['result']
+        usd_per_kg = usd_per_ounce * 32.1507
+        return round(usd_per_kg, 2)
+    except:
         return None
 
-# USD/KG fiyatı çekiliyor
-usd_kg_otomatik = get_usd_kg_from_dovizcom() or 104680
+usd_kg_otomatik = get_usd_kg_from_api() or 104680
 usd_kg_satis = st.number_input("USD/KG Satış Fiyatı", value=usd_kg_otomatik)
+st.caption("USD/KG fiyatı otomatik olarak exchangerate.host üzerinden alınmıştır.")
+
 gram_altin = usd_kg_satis / 1000
 st.write(f"Gram Altın Fiyatı (USD): **{gram_altin:.3f}**")
 
 # Altın gramı
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
-# İşçilik tipi listesi (18 OMEGA eklendi)
+# İşçilik tipi
 tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA", "18 OMEGA"])
 
 # Milyem ayar seçenekleri
@@ -56,23 +54,15 @@ ayar_secenekleri = {
     "10K": 0.417
 }
 
-# Milyem ve işçilik değeri belirleme
+# Saflık ve işçilik girişi
 if tip == "14 OMEGA":
-    default_saflik = 0.380
-    default_iscilik = 0.000
-    st.write("14 OMEGA seçildiği için varsayılan değerler atanmıştır.")
-    saflik = st.number_input("Milyem (Saflık)", value=default_saflik, step=0.001, format="%.3f")
-    iscilik = st.number_input("İşçilik", value=default_iscilik, step=0.001, format="%.3f")
+    saflik = st.number_input("Milyem (Saflık)", value=0.380, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
     secilen_ayar = "14 OMEGA"
-
 elif tip == "18 OMEGA":
-    default_saflik = 0.450
-    default_iscilik = 0.000
-    st.write("18 OMEGA seçildiği için varsayılan değerler atanmıştır.")
-    saflik = st.number_input("Milyem (Saflık)", value=default_saflik, step=0.001, format="%.3f")
-    iscilik = st.number_input("İşçilik", value=default_iscilik, step=0.001, format="%.3f")
+    saflik = st.number_input("Milyem (Saflık)", value=0.450, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
     secilen_ayar = "18 OMEGA"
-
 else:
     secilen_ayar = st.selectbox("Milyem (Saflık) Ayarı", list(ayar_secenekleri.keys()))
     saflik = ayar_secenekleri[secilen_ayar]
@@ -100,7 +90,7 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
-# Geçici liste
+# Geçici veri listesi
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
@@ -147,7 +137,7 @@ if st.session_state.veriler:
             pdf.cell(40, 10, f'{v["Toplam"]:.2f}', 1)
             pdf.ln()
 
-        path = "altin_raporu_basliksade.pdf"
+        path = "altin_raporu_otomatik.pdf"
         pdf.output(path)
         with open(path, "rb") as f:
             st.download_button("PDF Dosyasını İndir", f, file_name=path, mime="application/pdf")
