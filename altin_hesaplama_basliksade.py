@@ -60,6 +60,22 @@ elif tip == "18 OMEGA":
     saflik = st.number_input("Milyem (Saflık)", value=0.450, step=0.001, format="%.3f")
     iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
     secilen_ayar = "18 OMEGA"
+elif tip == "21 OMEGA":
+    saflik = st.number_input("Milyem (Saflık)", value=0.550, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
+    secilen_ayar = "21 OMEGA"
+elif tip == "14 FERMUAR":
+    saflik = st.number_input("Milyem (Saflık)", value=0.575, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
+    secilen_ayar = "14 FERMUAR"
+elif tip == "18 FERMUAR":
+    saflik = st.number_input("Milyem (Saflık)", value=0.740, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
+    secilen_ayar = "18 FERMUAR"
+elif tip == "21 FERMUAR":
+    saflik = st.number_input("Milyem (Saflık)", value=0.865, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
+    secilen_ayar = "21 FERMUAR"
 else:
     secilen_ayar = st.selectbox("Milyem (Saflık) Ayarı", list(ayar_secenekleri.keys()))
     saflik = ayar_secenekleri[secilen_ayar]
@@ -72,6 +88,12 @@ else:
         default_iscilik = 0.035
     elif tip == "Forse":
         default_iscilik = 0.015
+    elif tip == "Ataç":
+        default_iscilik = 0.035
+    elif tip == "Doc":
+        default_iscilik = 0.035
+    elif tip == "Flexi":
+        default_iscilik = 0.035
     else:
         default_iscilik = 0.035
 
