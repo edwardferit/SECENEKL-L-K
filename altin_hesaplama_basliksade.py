@@ -5,35 +5,34 @@ from PIL import Image
 import requests
 from datetime import datetime
 
-# Sayfayı her 30 saniyede bir yenile
-st.markdown(
-    """
+# Sayfa yapılandırması – Bu ilk Streamlit komutu olmalı!
+st.set_page_config(page_title="Altın Hesaplama", layout="centered")
+
+# 30 saniyede bir sayfa yenileme (otomatik güncelleme)
+st.markdown("""
     <script>
         setTimeout(function() {
             window.location.reload();
         }, 30000);
     </script>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-# Sayfa başlığı ve zaman bilgisi
-st.set_page_config(page_title="Altın Hesaplama", layout="centered")
+# Sayfa güncelleme zamanı gösterimi
 st.caption(f"Güncelleme Zamanı: {datetime.now().strftime('%H:%M:%S')}")
 
-# Logo
+# Logo (opsiyonel)
 try:
     logo = Image.open("Siyah-PNG.png")
     st.image(logo, use_container_width=True)
 except:
-    st.warning("Logo bulunamadı. 'Siyah-PNG.png' dosyasını eklemeyi unutmayın.")
+    st.warning("Logo yüklenemedi. 'Siyah-PNG.png' dosyası eksik olabilir.")
 
 st.title("Altın Hesaplama")
 
-# Firma adı
+# Firma adı girişi
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
 
-# USD/KG otomatik veri çekme
+# API üzerinden USD/KG çekme
 @st.cache_data
 def get_usd_kg_from_api():
     try:
@@ -45,31 +44,27 @@ def get_usd_kg_from_api():
     except:
         return None
 
+# USD/KG hesaplama
 usd_kg_otomatik = get_usd_kg_from_api() or 104680
 usd_kg_satis = st.number_input("USD/KG Satış Fiyatı", value=usd_kg_otomatik)
-st.caption("Fiyat exchangerate.host API üzerinden otomatik alınmıştır. Harem Altın karşılaştırması için: [USD/KG fiyatı](https://m.doviz.com/altin/harem/usd-kg)")
+st.caption("Fiyat exchangerate.host API üzerinden alınmıştır. Harem Altın için: [USD/KG fiyatı](https://m.doviz.com/altin/harem/usd-kg)")
 
 gram_altin = usd_kg_satis / 1000
 st.write(f"Gram Altın Fiyatı (USD): **{gram_altin:.3f}**")
 
-# Altın gramı
+# Altın gramı girişi
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
-# İşçilik tipi
+# İşçilik tipi seçimi
 tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA", "18 OMEGA"])
 
-# Milyem ayarları
+# Milyem değerleri
 ayar_secenekleri = {
-    "14K": 0.585,
-    "18K": 0.750,
-    "21K": 0.875,
-    "22K": 0.916,
-    "8K": 0.333,
-    "9K": 0.375,
-    "10K": 0.417
+    "14K": 0.585, "18K": 0.750, "21K": 0.875,
+    "22K": 0.916, "8K": 0.333, "9K": 0.375, "10K": 0.417
 }
 
-# İşçilik ve milyem girişi
+# Saflık ve işçilik ayarı
 if tip == "14 OMEGA":
     saflik = st.number_input("Milyem (Saflık)", value=0.380, step=0.001, format="%.3f")
     iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
@@ -105,7 +100,7 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
-# Geçici veri listesi
+# Kayıtlı hesaplamalar için liste
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
