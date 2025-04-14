@@ -17,7 +17,7 @@ st.title("FİYAT TEKLİF")
 
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
 
-@st.cache_data(ttl=300)  # 5 dakikada bir yenilenir
+@st.cache_data(ttl=300)
 def get_usd_kg_from_api():
     try:
         url = "https://api.exchangerate.host/convert?from=XAU&to=USD"
@@ -28,9 +28,9 @@ def get_usd_kg_from_api():
     except:
         return None
 
-# API'den çek + %0.2 satış farkı uygula
+# Satış fiyatı (%0.1 fark uygulandı)
 usd_kg_mid = get_usd_kg_from_api() or 104.680
-satis_farki = 1.002
+satis_farki = 1.001
 usd_kg_satis_otomatik = round(usd_kg_mid * satis_farki, 3)
 
 usd_kg_satis = st.number_input(
@@ -43,8 +43,6 @@ usd_kg_satis = st.number_input(
 if st.button("USD/KG Güncelle"):
     st.cache_data.clear()
     st.rerun()
-
-st.caption("Fiyat exchangerate.host üzerinden alınmıştır. Otomatik olarak %0.2 satış farkı uygulanmıştır.")
 
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
