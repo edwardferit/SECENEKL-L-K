@@ -5,22 +5,23 @@ from PIL import Image
 import requests
 from datetime import datetime
 
-# Sayfa yapılandırması – Bu ilk Streamlit komutu olmalı!
-st.set_page_config(page_title="FİYAT TEKLİF", layout="centered")
+# Sayfa ayarları (ilk Streamlit komutu)
+st.set_page_config(page_title="Fiyat Teklif", layout="centered")
 
-# Logo (opsiyonel)
+# Logo (isteğe bağlı)
 try:
     logo = Image.open("Siyah-PNG.png")
     st.image(logo, use_container_width=True)
 except:
-    st.warning("Logo yüklenemedi. 'Siyah-PNG.png' dosyası eksik olabilir.")
+    st.warning("Logo yüklenemedi. 'Siyah-PNG.png' dosyasını kontrol edin.")
 
+# Başlık
 st.title("FİYAT TEKLİF")
 
-# Firma adı girişi
+# Firma adı
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
 
-# API üzerinden USD/KG çekme
+# USD/KG API verisi
 @st.cache_data
 def get_usd_kg_from_api():
     try:
@@ -28,21 +29,29 @@ def get_usd_kg_from_api():
         response = requests.get(url).json()
         usd_per_ounce = response["result"]
         usd_per_kg = usd_per_ounce * 32.1507
-        return round(usd_per_kg, 2)
+        return round(usd_per_kg, 3)
     except:
         return None
 
-# USD/KG hesaplama
 usd_kg_otomatik = get_usd_kg_from_api() or 104680
-usd_kg_satis = st.number_input("USD/KG Satış Fiyatı", value=usd_kg_otomatik, step=0.001, format="%.3f")
+
+# USD/KG giriş (ondalık destekli)
+usd_kg_satis = st.number_input(
+    "USD/KG Satış Fiyatı",
+    value=float(usd_kg_otomatik),
+    step=0.001,
+    format="%.3f"
+)
+
 st.caption("Fiyat exchangerate.host API üzerinden alınmıştır. Harem Altın için: [USD/KG fiyatı](https://m.doviz.com/altin/harem/usd-kg)")
 
+# Gram fiyat hesapla
 gram_altin = usd_kg_satis / 1000
 
-# Altın gramı girişi
+# Altın gramı
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
-# İşçilik tipi seçimi
+# İşçilik tipi
 tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA", "18 OMEGA"])
 
 # Milyem değerleri
@@ -87,7 +96,7 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
-# Kayıtlı hesaplamalar için liste
+# Kayıtlar
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
@@ -135,7 +144,7 @@ if st.session_state.veriler:
             pdf.cell(40, 10, f'{v["Toplam"]:.2f}', 1)
             pdf.ln()
 
-        path = "altin_raporu_otomatik.pdf"
+        path = "fiyat_teklif_raporu.pdf"
         pdf.output(path)
         with open(path, "rb") as f:
             st.download_button("PDF Dosyasını İndir", f, file_name=path, mime="application/pdf")
