@@ -23,23 +23,17 @@ def get_usd_kg_from_api():
         url = "https://api.exchangerate.host/convert?from=XAU&to=USD"
         response = requests.get(url).json()
         usd_per_ounce = response["result"]
-        usd_per_kg = usd_per_ounce * 32.1507
-        return round(usd_per_kg, 3)
+        usd_per_gram = usd_per_ounce / 31.1035
+        return round(usd_per_gram, 3)
     except:
         return None
 
-# Fark yok, birebir fiyat
-usd_kg_mid = get_usd_kg_from_api() or 104.680
-usd_kg_satis_otomatik = usd_kg_mid
-
-usd_kg_satis = st.number_input(
-    "USD/KG Satış Fiyatı",
-    value=usd_kg_satis_otomatik,
-    step=0.001,
-    format="%.3f"
+usd_gram_otomatik = get_usd_kg_from_api() or 104.680
+usd_gram_satis = st.number_input(
+    "Gram Altın Fiyatı (USD)", value=usd_gram_otomatik, step=0.001, format="%.3f"
 )
 
-if st.button("USD/KG Güncelle"):
+if st.button("Gram Fiyatı Güncelle"):
     st.cache_data.clear()
     st.rerun()
 
@@ -77,9 +71,9 @@ else:
 
     iscilik = st.number_input("İşçilik", value=default_iscilik, step=0.001, format="%.3f")
 
-gram_altin = usd_kg_satis / 1000
-sadece_iscilik = iscilik * gram_altin
-iscilik_dahil_fiyat = (saflik + iscilik) * gram_altin
+# Hesaplamalar
+sadece_iscilik = iscilik * usd_gram_satis
+iscilik_dahil_fiyat = (saflik + iscilik) * usd_gram_satis
 toplam_fiyat = iscilik_dahil_fiyat * altin_gram
 
 st.subheader("Hesaplama Sonuçları")
@@ -87,6 +81,7 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
+# Geçici veri listesi
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
