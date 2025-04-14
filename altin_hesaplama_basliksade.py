@@ -28,10 +28,9 @@ def get_usd_kg_from_api():
     except:
         return None
 
-# Satış fiyatı (%0.1 fark uygulandı)
+# Fark yok, birebir fiyat
 usd_kg_mid = get_usd_kg_from_api() or 104.680
-satis_farki = 1.000
-usd_kg_satis_otomatik = round(usd_kg_mid * satis_farki, 3)
+usd_kg_satis_otomatik = usd_kg_mid
 
 usd_kg_satis = st.number_input(
     "USD/KG Satış Fiyatı",
