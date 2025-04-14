@@ -6,19 +6,19 @@ import requests
 
 st.set_page_config(page_title="Altın Hesaplama", layout="centered")
 
-# Logo
+# Logo yükle
 try:
     logo = Image.open("Siyah-PNG.png")
     st.image(logo, use_container_width=True)
 except:
-    st.warning("Logo yüklenemedi. 'Siyah-PNG.png' dosyası bulunamadı.")
+    st.warning("Logo bulunamadı. 'Siyah-PNG.png' dosyasını eklemeyi unutmayın.")
 
 st.title("Altın Hesaplama")
 
 # Firma adı
 firma_adi = st.text_input("Firma Adı", "EDOCAN")
 
-# USD/KG otomatik veri çekme (exchangerate.host üzerinden)
+# USD/KG otomatik veri çekme
 @st.cache_data
 def get_usd_kg_from_api():
     try:
@@ -32,7 +32,7 @@ def get_usd_kg_from_api():
 
 usd_kg_otomatik = get_usd_kg_from_api() or 104680
 usd_kg_satis = st.number_input("USD/KG Satış Fiyatı", value=usd_kg_otomatik)
-st.caption("USD/KG fiyatı otomatik olarak exchangerate.host üzerinden alınmıştır.")
+st.caption("Fiyat exchangerate.host API üzerinden otomatik alınmıştır. Harem Altın karşılaştırması için: [USD/KG fiyatı](https://m.doviz.com/altin/harem/usd-kg)")
 
 gram_altin = usd_kg_satis / 1000
 st.write(f"Gram Altın Fiyatı (USD): **{gram_altin:.3f}**")
@@ -43,7 +43,7 @@ altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 # İşçilik tipi
 tip = st.selectbox("İşçilik Tipi", ["CHP", "Halat", "Gurmet", "Forse", "14 OMEGA", "18 OMEGA"])
 
-# Milyem ayar seçenekleri
+# Milyem ayarları
 ayar_secenekleri = {
     "14K": 0.585,
     "18K": 0.750,
@@ -54,7 +54,7 @@ ayar_secenekleri = {
     "10K": 0.417
 }
 
-# Saflık ve işçilik girişi
+# İşçilik ve milyem girişi
 if tip == "14 OMEGA":
     saflik = st.number_input("Milyem (Saflık)", value=0.380, step=0.001, format="%.3f")
     iscilik = st.number_input("İşçilik", value=0.000, step=0.001, format="%.3f")
@@ -90,7 +90,7 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
-# Geçici veri listesi
+# Verileri geçici olarak tut
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
@@ -104,6 +104,7 @@ if st.button("Hesaplamayı Kaydet"):
         "Toplam": round(toplam_fiyat, 2)
     })
 
+# PDF oluştur
 if st.session_state.veriler:
     st.subheader("Kayıtlı Hesaplamalar")
     st.table(st.session_state.veriler)
