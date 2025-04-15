@@ -7,7 +7,7 @@ from pathlib import Path
 
 st.set_page_config(page_title="Fiyat Teklif", layout="centered")
 
-# Logo yükleme
+# Logo
 try:
     logo = Image.open("Siyah-PNG.png")
     st.image(logo, use_container_width=True)
@@ -38,34 +38,31 @@ if st.button("Gram Fiyatı Güncelle"):
 
 altin_gram = st.number_input("Altın Gram", value=1.0, step=1.0)
 
-# İşçilik listesi (TL cinsinden)
+# İşçilik listesi (USD)
 iscilik_listesi = {
-    "HALAT": 40, "İÇİBOŞ FORCE": 40, "DOC": 40, "GURMET": 40,
-    "KALZE": 20, "POPCORN": 40, "FLEXİ": 40, "ETRUŞKA": 40,
-    "SİNGAPUR": 30, "DOLU GURMET": 30, "TIRNAK ÇAKISI": 30,
-    "ATAÇ": 35, "BOYLANMIŞ FORCE": 20, "KİLİT": 20,
-    "PRES ÜRÜNLER": 20, "DÖKÜM MENGEÇ": 30, "PRES MENGEÇ": 20,
-    "ARAP MENGECİ": 30, "TOP": 25, "ASANSÖR": 15,
-    "FERMUAR 14": 555, "FERMUAR 18": 720, "FERMUAR 21": 845,
-    "TAŞLI SU YOLU": 550, "14 OMEGA": 340, "18 OMEGA": 440,
-    "21 OMEGA": 540, "8MM 14 OMEGA": 440, "8MM 18 OMEGA": 540,
-    "8MM 21 OMEGA": 640
+    "HALAT": 0.040, "İÇİBOŞ FORCE": 0.040, "DOC": 0.040, "GURMET": 0.040,
+    "KALZE": 0.020, "POPCORN": 0.040, "FLEXİ": 0.040, "ETRUŞKA": 0.040,
+    "SİNGAPUR": 0.030, "DOLU GURMET": 0.030, "TIRNAK ÇAKISI": 0.030,
+    "ATAÇ": 0.035, "BOYLANMIŞ FORCE": 0.020, "KİLİT": 0.020,
+    "PRES ÜRÜNLER": 0.020, "DÖKÜM MENGEÇ": 0.030, "PRES MENGEÇ": 0.020,
+    "ARAP MENGECİ": 0.030, "TOP": 0.025, "ASANSÖR": 0.015,
+    "FERMUAR 14": 0.555, "FERMUAR 18": 0.720, "FERMUAR 21": 0.845,
+    "TAŞLI SU YOLU": 0.550, "14 OMEGA": 0.340, "18 OMEGA": 0.440,
+    "21 OMEGA": 0.540, "8MM 14 OMEGA": 0.440, "8MM 18 OMEGA": 0.540,
+    "8MM 21 OMEGA": 0.640
 }
 
-# USD-TL sabit kur (gerekirse API ile alınabilir)
-usd_to_tl = 32.0  # Dilersen güncel oranla değiştir
-
-# Tip seçimi
-tip = st.selectbox("İşçilik Tipi", list(iscilik_listesi.keys()))
-
-# Ayar seçenekleri
 ayar_secenekleri = {
     "14K": 0.585, "18K": 0.750, "21K": 0.875,
     "22K": 0.916, "8K": 0.333, "9K": 0.375, "10K": 0.417
 }
 
-# OMEGA, FERMUAR, TAŞLI özel ürünler - manuel safiyet ve işçilik
-if any(keyword in tip for keyword in ["OMEGA", "FERMUAR", "TAŞLI"]):
+tip = st.selectbox("İşçilik Tipi", list(iscilik_listesi.keys()))
+
+ozel_urunler = ["OMEGA", "FERMUAR", "TAŞLI"]
+
+if any(o in tip for o in ozel_urunler):
+    # Özel ürün: kullanıcıdan milyem al, işçilik sabit 0
     if "14" in tip:
         saflik = st.number_input("Milyem (Saflık)", value=0.380, step=0.001, format="%.3f")
     elif "18" in tip:
@@ -74,16 +71,17 @@ if any(keyword in tip for keyword in ["OMEGA", "FERMUAR", "TAŞLI"]):
         saflik = st.number_input("Milyem (Saflık)", value=0.875, step=0.001, format="%.3f")
     else:
         saflik = st.number_input("Milyem (Saflık)", value=0.750, step=0.001, format="%.3f")
-    iscilik = st.number_input("İşçilik (manuel giriniz)", value=0.000, step=0.001, format="%.3f")
+
+    iscilik = 0.000
+    st.info("Bu ürün için işçilik değeri sabit: **0.000 USD**")
     secilen_ayar = tip
 else:
+    # Diğer ürünler: otomatik ayar ve işçilik
     secilen_ayar = st.selectbox("Milyem (Saflık) Ayarı", list(ayar_secenekleri.keys()))
     saflik = ayar_secenekleri[secilen_ayar]
-    iscilik_tl = iscilik_listesi[tip]
-    iscilik = round(iscilik_tl / usd_to_tl, 3)
-    iscilik = st.number_input("İşçilik", value=iscilik, step=0.001, format="%.3f")
+    iscilik = st.number_input("İşçilik", value=iscilik_listesi[tip], step=0.001, format="%.3f")
 
-# Hesaplamalar
+# Hesaplama
 sadece_iscilik = iscilik * usd_gram_satis
 iscilik_dahil_fiyat = (saflik + iscilik) * usd_gram_satis
 toplam_fiyat = iscilik_dahil_fiyat * altin_gram
@@ -93,12 +91,12 @@ st.write(f"1 Gram İşçilik: **{sadece_iscilik:.4f} USD**")
 st.write(f"İşçilik Dahil Gram Fiyatı: **{iscilik_dahil_fiyat:.3f} USD**")
 st.write(f"Toplam Fiyat: **{toplam_fiyat:.2f} USD**")
 
-# Geçici veri listesi
+# Veriler
 if "veriler" not in st.session_state:
     st.session_state.veriler = []
 
 if st.button("Hesaplamayı Kaydet"):
-    urun_adi = tip if any(k in tip for k in ["OMEGA", "FERMUAR", "TAŞLI"]) else f"{tip} ({secilen_ayar})"
+    urun_adi = tip if any(k in tip for k in ozel_urunler) else f"{tip} ({secilen_ayar})"
     st.session_state.veriler.append({
         "Gram": round(altin_gram, 2),
         "Ürün": urun_adi,
