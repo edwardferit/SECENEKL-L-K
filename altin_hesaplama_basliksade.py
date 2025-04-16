@@ -29,7 +29,7 @@ def get_usd_kg_from_api():
     except:
         return None
 
-usd_gram_otomatik = get_usd_kg_from_api() or 104.680
+usd_gram_otomatik = get_usd_kg_from_api() or 108.000
 usd_gram_satis = st.number_input("Gram Altın Fiyatı (USD)", value=usd_gram_otomatik, step=0.001, format="%.3f")
 
 if st.button("Gram Fiyatı Güncelle"):
